@@ -14,6 +14,6 @@ class PlateInfo:
     status: PlateStatus
     serial: int|None = None
     mac: str|None = None
-    cycle_time: int|0 = None
+    cycle_time: int|None = None
     microcontroller_type: str = None
     firmware_file: str = None

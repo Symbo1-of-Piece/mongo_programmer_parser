@@ -9,3 +9,9 @@ class Popup(ft.AlertDialog):
         page.dialog = self
         self.open = True
         page.update()
+        
+        
+class MElBut(ft.ElevatedButton):
+    
+    def __init__(self, **kwargs):
+        super(MElBut, self).__init__(color=ft.colors.WHITE, **kwargs)

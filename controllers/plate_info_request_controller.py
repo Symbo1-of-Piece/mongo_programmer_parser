@@ -13,11 +13,15 @@ import file_saver as fs
 class PlateInfoRequestController:
     
     def __init__(self):
-        self.request_button_state = Event()
+        self.plate_info_request_button_state = Event()
         self.get_project_names_button_state = Event()
-        self.layout = PlateInfoRequestLayout(self.request_button_state, self.get_project_names_button_state)
+        self.snmac_request_button_state = Event()
+        self.layout = PlateInfoRequestLayout(
+            self.plate_info_request_button_state, self.get_project_names_button_state,
+            self.snmac_request_button_state)
         Thread(target=self.get_project_names_button_state_monitor, daemon=True).start()
-        Thread(target=self.request_button_state_monitor, daemon=True).start()
+        Thread(target=self.plate_info_request_button_state_monitor, daemon=True).start()
+        Thread(target=self.snmac_request_button_state_monitor, daemon=True).start()
         
     def get_project_names(self):
         ...
@@ -30,24 +34,29 @@ class PlateInfoRequestController:
         while True:
             try:
                 self.get_project_names_button_state.wait()
-                client, collection = dbh.get_fw_collection()
-                names = dbh.find_unique_project_names(collection)
-                client.close()
-                self.layout.build_project_names_dropdown(names)
-                # logger.debug(f"{names=}")
-                self.request_button_state.clear()
+                self.fill_projects_dropdown()
             except Exception as e:
                 logger.exception(e)
             finally:
                 self.get_project_names_button_state.clear()
                 
-    def request_button_state_monitor(self):
+    def fill_projects_dropdown(self):
+        client, collection = dbh.get_fw_collection()
+        names = dbh.find_unique_project_names(collection)
+        client.close()
+        self.layout.build_project_names_dropdown(names)
+                
+    def plate_info_request_button_state_monitor(self):
         while True:
             try:
-                self.request_button_state.wait()
+                self.plate_info_request_button_state.wait()
                 client, collection = dbh.get_fw_collection()
-                start_date = self.layout.get_start_date().strftime("%Y-%m-%d")
-                end_date = self.layout.get_end_date().strftime("%Y-%m-%d")
+                try:
+                    start_date = self.layout.get_start_date().strftime("%Y-%m-%d")
+                    end_date = self.layout.get_end_date().strftime("%Y-%m-%d")
+                except AttributeError:
+                    mw.Popup(self.layout.page, f"Дата не выбрана")
+                    continue
                 name = self.layout.get_project_name()
                 plates_info = dbh.get_data_for_report(
                     collection,
@@ -61,9 +70,36 @@ class PlateInfoRequestController:
                 path = fs.XLSX_PATH / name
                 path = str(fs.change_name_if_exists(fs.sanitize_name(path)))
                 fs.ExcelExporter.export_plate_infos(plates_info, path)
-                self.request_button_state.clear()
                 mw.Popup(self.layout.page, f"Файл {path} успешно сохранен")
             except Exception as e:
                 logger.exception(e)
             finally:
-                self.request_button_state.clear()
+                self.plate_info_request_button_state.clear()
+                
+    def snmac_request_button_state_monitor(self):
+        while True:
+            try:
+                self.snmac_request_button_state.wait()
+                client, collection = dbh.get_fw_collection()
+                try:
+                    start_date = self.layout.get_start_date().strftime("%Y-%m-%d")
+                    end_date = self.layout.get_end_date().strftime("%Y-%m-%d")
+                except AttributeError:
+                    mw.Popup(self.layout.page, f"Дата не выбрана")
+                    continue
+                name = self.layout.get_project_name()
+                snmac_list = dbh.get_serial_mac_pairs(collection, start_date, end_date, name)
+                if not snmac_list:
+                    mw.Popup(self.layout.page, f"В {name} за период {start_date} - {end_date} MAC адресов не найдено")
+                    continue
+                client.close()
+                file_name = (f"{name}_{snmac_list[0][0]}_{snmac_list[-1][0]}"
+                        f"_{start_date}_{end_date}.txt")
+                path = fs.SNMAC_PATH / name / file_name
+                path = fs.change_name_if_exists(fs.sanitize_name(path))
+                fs.export_snmac_to_txt(snmac_list, path)
+                mw.Popup(self.layout.page, f"Файл {path} успешно сохранен")
+            except Exception as e:
+                logger.exception(e)
+            finally:
+                self.snmac_request_button_state.clear()

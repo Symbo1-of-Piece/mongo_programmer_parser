@@ -6,12 +6,17 @@ from collections import Counter
 import os
 from logger import logger
 
-HOST = "localhost:27017"
-DB = "auto-programmer"
+HOST = "192.168.55.179:27017"
+USERNAME = "dev"
+PASSWORD = "mongo9181"
+DB = "auto-programmer-db"
 
 def get_fw_collection() -> tuple[MongoClient, Collection]:
     global firmware_collection
-    client = MongoClient(HOST)
+    if PASSWORD:
+        client = MongoClient(HOST, username=USERNAME, password=PASSWORD)
+    else:
+        client = MongoClient(HOST)
     db = client[DB]
     firmware_collection = db['firmware_projects_arch']
     collection_list = db.list_collection_names()
@@ -119,3 +124,38 @@ def get_data_for_report(collection, start_date, end_date, project_name):
             }
             report.append(one_file_report)
     return report
+
+
+def get_serial_mac_pairs(collection, start_date: str, end_date: str, project_name) -> list[tuple[str, str]]:
+    """
+    Функция для извлечения списка пар серийный номер - MAC-адрес за указанный промежуток времени.
+
+    Parameters:
+        collection (pymongo.collection.Collection): Коллекция MongoDB, из которой нужно извлечь данные. 
+        start_date (str): Начальная дата в формате 'YYYY-MM-DD'.
+        end_date (str): Конечная дата в формате 'YYYY-MM-DD'.
+        
+    Returns:
+       serial_mac_pairs (list): Список, который содержит пары значений serial_number, mac_address.
+       
+    Example_usage:
+        get_serial_mac_pairs(firmware_collection, "2024-03-20", "2024-03-24")
+
+    """
+    query = {
+        'project_name' : project_name,
+        'timestamp': {'$gte': start_date,
+                           '$lte': end_date}
+             }
+    projection = {'_id': 0, 'plates': 1}
+
+    cursor = collection.find(query, projection)
+
+    serial_mac_pairs = []
+    for document in cursor:
+        plates = document.get('plates', {})
+        for plate_info in plates.values():
+            serial_number = plate_info.get('serial_number')
+            mac_address = plate_info.get('mac_address')
+            serial_mac_pairs.append((serial_number, mac_address)) 
+    return serial_mac_pairs

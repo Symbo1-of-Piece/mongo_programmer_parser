@@ -1,5 +1,6 @@
 import flet as ft
 
+import db_handles as dbh
 
 class Popup(ft.AlertDialog):
 
@@ -15,3 +16,37 @@ class MElBut(ft.ElevatedButton):
     
     def __init__(self, **kwargs):
         super(MElBut, self).__init__(color=ft.colors.WHITE, **kwargs)
+        
+    
+class SettingsScreen(ft.Column):
+    
+    def __init__(self, event, *args, **kwargs):
+        super().__init__(**kwargs)
+        self.event = event
+        self.host_input = ft.TextField(label="HOST:PORT", dense=True, value=dbh.HOST)
+        self.login_input = ft.TextField(label="Login", dense=True, value=dbh.USERNAME)
+        self.password_input = ft.TextField(
+            label="Password", dense=True, password=True,
+            value=dbh.PASSWORD)
+        self.build_layout()
+        
+    def build_layout(self):
+        self.controls.extend([
+            self.host_input,
+            self.login_input,
+            self.password_input,
+            MElBut(text="Сохранить", on_click=self.save_data)
+        ])
+        
+    def save_data(self, e: ft.ControlEvent):
+        host = self.host_input.value.strip()
+        if host:
+            dbh.set_host(host)
+        login = self.login_input.value.strip()
+        if login:
+            dbh.set_username(login)
+        password = self.password_input.value.strip()
+        if password:
+            dbh.set_password(password)
+        self.event.set()
+        

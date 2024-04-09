@@ -11,6 +11,20 @@ USERNAME = "dev"
 PASSWORD = "mongo9181"
 DB = "auto-programmer-db"
 
+def set_host(host: str):
+    global HOST
+    HOST = host
+
+def set_username(user: str):
+    global USERNAME
+    USERNAME = user
+    
+
+def set_password(password: str):
+    global PASSWORD
+    PASSWORD = password
+    
+
 def get_fw_collection() -> tuple[MongoClient, Collection]:
     global firmware_collection
     if PASSWORD:

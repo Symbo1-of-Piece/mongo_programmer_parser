@@ -24,10 +24,11 @@ class SettingsScreen(ft.Column):
         super().__init__(**kwargs)
         self.event = event
         self.host_input = ft.TextField(label="HOST:PORT", dense=True, value=dbh.HOST)
-        self.login_input = ft.TextField(label="Login", dense=True, value=dbh.USERNAME)
+        self.login_input = ft.TextField(label="Пользователь", dense=True, value=dbh.USERNAME)
         self.password_input = ft.TextField(
-            label="Password", dense=True, password=True,
+            label="Пароль", dense=True, password=True,
             value=dbh.PASSWORD)
+        self.db_input = ft.TextField(label="Название БД")
         self.build_layout()
         
     def build_layout(self):
@@ -35,6 +36,7 @@ class SettingsScreen(ft.Column):
             self.host_input,
             self.login_input,
             self.password_input,
+            self.db_input,
             MElBut(text="Сохранить", on_click=self.save_data)
         ])
         
@@ -48,5 +50,9 @@ class SettingsScreen(ft.Column):
         password = self.password_input.value.strip()
         if password:
             dbh.set_password(password)
+        db = self.db_input.value.strip()
+        if db:
+            dbh.set_db(db)
+        dbh.dump_access_info()
         self.event.set()
         

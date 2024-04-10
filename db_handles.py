@@ -1,15 +1,46 @@
 import json
+from pathlib import Path
+
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from bson import json_util
 from collections import Counter
 import os
 from logger import logger
+from file_saver import ROOT_FOLDER
 
-HOST = "192.168.55.179:27017"
-USERNAME = "dev"
-PASSWORD = "mongo9181"
-DB = "auto-programmer-db"
+ACCESS_PATH = ROOT_FOLDER / "dbaccess.txt"
+
+if ACCESS_PATH.exists():
+    with open(ACCESS_PATH, encoding="utf8") as f:
+        try:
+            data: dict = json.load(f)
+        except Exception as e:
+            logger.error(e)
+            raise e
+
+        HOST = data["HOST"]
+        USERNAME = data["USERNAME"]
+        PASSWORD = data["password"]
+        DB = data["DB"]
+else:
+    HOST = "192.168.55.179:27017"
+    USERNAME = "dev"
+    PASSWORD = "mongo9181"
+    DB = "auto-programmer-db"
+
+
+def dump_access_info():
+    if not ACCESS_PATH.parent.exists():
+        ACCESS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(ACCESS_PATH, "w", encoding="utf8") as f:
+        json.dump({
+            "HOST": HOST,
+            "USERNAME": USERNAME,
+            "PASSWORD": PASSWORD,
+            "DB": DB
+        }, f, ensure_ascii=False)
+
 
 def set_host(host: str):
     global HOST
@@ -23,6 +54,11 @@ def set_username(user: str):
 def set_password(password: str):
     global PASSWORD
     PASSWORD = password
+
+
+def set_db(db: str):
+    global DB
+    DB = db
     
 
 def get_fw_collection() -> tuple[MongoClient, Collection]:

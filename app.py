@@ -13,7 +13,7 @@ def main(page: ft.Page):
     page.title = "Auto-programmer DB client v. " + VERSION
     
     page.window_width = 400      
-    page.window_height = 350 
+    page.window_height = 450
     page.theme_mode = flet_core.ThemeMode.DARK
     plate_info_request_controller = PlateInfoRequestController()
     main_column = ft.Column()

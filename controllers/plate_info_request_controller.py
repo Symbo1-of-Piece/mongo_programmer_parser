@@ -2,6 +2,7 @@ import flet as ft
 from threading import Event, Thread
 from uuid import uuid4
 from datetime import datetime
+from pathlib import Path
 
 from ui.plate_info_request_layout import PlateInfoRequestLayout
 from ui import mod_widgets as mw
@@ -68,14 +69,31 @@ class PlateInfoRequestController:
                 client.close()
                 name = f"{name}_{start_date}_{end_date}.xlsx"
                 path = fs.XLSX_PATH / name
-                path = str(fs.change_name_if_exists(fs.sanitize_name(path)))
+                path = fs.change_name_if_exists(fs.sanitize_name(path))
                 fs.ExcelExporter.export_plate_infos(plates_info, path)
-                mw.Popup(self.layout.page, f"Файл {path} успешно сохранен")
+                self.show_popup_open_file(self.layout.page, path)
             except Exception as e:
                 logger.exception(e)
             finally:
                 self.plate_info_request_button_state.clear()
                 
+    def show_popup_open_file(self, page:ft.Page, file_path: Path):
+        def close_popup(i):
+            popup.open = False
+            page.update()
+        
+        popup = ft.AlertDialog(
+            content=ft.Text(f"Файл {str(file_path)} успешно сохранен"),
+            actions=[
+            mw.MElBut(text="Открыть файл", on_click=lambda i: fs.start_file(file_path)),
+            mw.MElBut(text="Закрыть", on_click=close_popup)
+            ],
+            open=True)
+        page.dialog = popup
+        page.update()
+        
+        
+            
     def snmac_request_button_state_monitor(self):
         while True:
             try:
@@ -98,7 +116,7 @@ class PlateInfoRequestController:
                 path = fs.SNMAC_PATH / name / file_name
                 path = fs.change_name_if_exists(fs.sanitize_name(path))
                 fs.export_snmac_to_txt(snmac_list, path)
-                mw.Popup(self.layout.page, f"Файл {path} успешно сохранен")
+                self.show_popup_open_file(self.layout.page, path)
             except Exception as e:
                 logger.exception(e)
             finally:

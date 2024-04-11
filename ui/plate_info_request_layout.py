@@ -14,7 +14,7 @@ class PlateInfoRequestLayout(ft.Container):
         self.snmac_request_state = snmac_request_state
         self.request_button_state = request_button_state
         self.get_project_names_button_state = get_project_names_button_state
-        self.project_name_input = ft.Dropdown()
+        self.project_name_input = ft.Dropdown(label="Проект")
         
         self.start_date_picker = ft.DatePicker()
         self.start_date_label = ft.Text()

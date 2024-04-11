@@ -3,6 +3,7 @@ from pathlib import Path
 from uuid import uuid4
 import string
 import random
+import os
 
 import pandas as pd
     
@@ -92,3 +93,6 @@ def change_name_if_exists(file: Path) -> Path:
         file_name = file.stem
         file_name += ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(3))
         file = parent / (file_name + ext)
+        
+def start_file(file_path: Path):
+    os.startfile(file_path)

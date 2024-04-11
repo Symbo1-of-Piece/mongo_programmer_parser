@@ -3,14 +3,14 @@ import logging.handlers
 from pathlib import Path
 
 
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger = logging.getLogger("main")
+logger.setLevel(logging.ERROR)
 formatter = logging.Formatter("%(asctime) - %(funcName) - %(levelname) - %(message)")
 
 stream_handler = logging.StreamHandler()
 # stream_handler.setFormatter(formatter)
 
-log_file_name: Path = Path().home() / "auto-programmer_exporter" / "logs" / "log.log"
+log_file_name: Path = Path().home() / "auto-programer-db" / "logs" / "log.log"
 if not log_file_name.parent.exists():
     log_file_name.parent.mkdir(parents=True, exist_ok=True)
 

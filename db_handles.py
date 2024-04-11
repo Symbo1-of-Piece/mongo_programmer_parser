@@ -21,7 +21,7 @@ if ACCESS_PATH.exists():
 
         HOST = data["HOST"]
         USERNAME = data["USERNAME"]
-        PASSWORD = data["password"]
+        PASSWORD = data["PASSWORD"]
         DB = data["DB"]
 else:
     HOST = "192.168.55.179:27017"

@@ -17,10 +17,11 @@ def main(page: ft.Page):
     page.theme_mode = flet_core.ThemeMode.DARK
     plate_info_request_controller = PlateInfoRequestController()
     main_column = ft.Column()
-    plate_info_request_controller.build_layout(main_column.controls)
     main_column.controls.append(ft.Row(
-        [ft.Row(), ft.IconButton(icon=ft.icons.SETTINGS, on_click=show_settings)]
+        [ft.Row(), ft.IconButton(icon=ft.icons.SETTINGS_APPLICATIONS, on_click=show_settings)]
     ))
+    plate_info_request_controller.build_layout(main_column.controls)
+
     page.add(main_column)
     page.update()
     pass

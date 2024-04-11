@@ -28,7 +28,7 @@ class SettingsScreen(ft.Column):
         self.password_input = ft.TextField(
             label="Пароль", dense=True, password=True,
             value=dbh.PASSWORD)
-        self.db_input = ft.TextField(label="Название БД")
+        self.db_input = ft.TextField(label="Название БД", dense=True, value=dbh.DB)
         self.build_layout()
         
     def build_layout(self):
